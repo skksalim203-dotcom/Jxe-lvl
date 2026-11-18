@@ -1,1 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>JXE LEVEL PRO — Dashboard</title>
+<style>
+:root{color-scheme:dark;--bg:#090d18;--panel:#111a2b;--line:#24334c;--muted:#91a2bb;--text:#edf4ff;--blue:#5b9cff;--green:#31d69a;--red:#ff647c}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 15% 0%,#14294a 0,transparent 38%),var(--bg);color:var(--text);font:15px system-ui,Segoe UI,Arial}
+.wrap{max-width:1200px;margin:auto;padding:24px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:22px}.brand{font-size:23px;font-weight:800;letter-spacing:.5px}.sub{color:var(--muted);font-size:13px}.pill{border:1px solid var(--line);border-radius:99px;padding:7px 12px;color:var(--green);font-size:12px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0}.panel,.stat{background:linear-gradient(145deg,#141f33,#0f1727);border:1px solid var(--line);border-radius:16px;padding:18px}.stat small{color:var(--muted)}.stat strong{display:block;font-size:25px;margin-top:6px}
+.grid{display:grid;grid-template-columns:350px 1fr;gap:15px}.panel h2{font-size:17px;margin:0 0 14px}.field{display:block;width:100%;margin:8px 0 12px;padding:12px;background:#0a1221;border:1px solid var(--line);border-radius:10px;color:var(--text);outline:none}.field:focus{border-color:var(--blue)}label{font-size:12px;color:var(--muted)}button,.btn{border:0;border-radius:10px;padding:10px 13px;background:#275caa;color:white;font-weight:650;cursor:pointer}button:hover{filter:brightness(1.15)}button.secondary{background:#25344c}button.danger{background:#87394a}button.good{background:#176d55}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.toolbar{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:12px}.accounts{display:grid;gap:10px}.account{background:#0d1627;border:1px solid var(--line);border-radius:13px;padding:15px}.acc-head{display:flex;justify-content:space-between;gap:12px;align-items:start}.name{font-weight:750}.muted{color:var(--muted);font-size:12px}.status{font-size:11px;border-radius:99px;padding:5px 9px;background:#233149;color:#c9d8ef}.status.RUNNING,.status.ONLINE{background:#123e35;color:#69e6bb}.status.PAUSED,.status.STOPPED,.status.EXPIRED{background:#492632;color:#ff9aaa}.metrics{display:flex;gap:18px;flex-wrap:wrap;margin:12px 0;color:#b8c7dc;font-size:13px}.account button{font-size:12px;padding:8px 10px}.empty{padding:35px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px}.notice{margin:12px 0;color:#a9c7ff;font-size:13px;min-height:18px}
+@media(max-width:800px){.wrap{padding:14px}.grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.top{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body><main class="wrap">
+<header class="top"><div><div class="brand">⚡ JXE LEVEL PRO</div><div class="sub">AUTO LEVEL UP BOT · CONTROL DASHBOARD</div></div><span class="pill">● DASHBOARD LIVE</span></header>
+<section class="stats">
+<div class="stat"><small>Total accounts</small><strong id="total">0</strong></div>
+<div class="stat"><small>Running</small><strong id="running">0</strong></div>
+<div class="stat"><small>Total EXP gained</small><strong id="exp">0</strong></div>
+<div class="stat"><small>Matches played</small><strong id="matches">0</strong></div>
+</section>
+<div class="grid">
+<aside class="panel">
+<h2>Add account</h2>
+<label>Login type</label><select id="type" class="field"><option value="guest">UID + Password</option><option value="token">Access Token</option></select>
+<div id="guestFields"><label>UID</label><input id="uid" class="field" placeholder="Enter account UID"><label>Password</label><input id="password" type="password" class="field" placeholder="Enter password"></div>
+<div id="tokenFields" hidden><label>Access token</label><textarea id="token" class="field" rows="4" placeholder="Paste access token"></textarea></div>
+<button id="add" style="width:100%">＋ Add account</button><div class="notice" id="notice"></div>
 
+<hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
+<h2>Import JSON accounts</h2>
+<label>JSON file (.json)</label>
+<input id="jsonFile" type="file" accept=".json,application/json" class="field">
+<label>অথবা JSON পেস্ট করুন</label>
+<textarea id="jsonText" class="field" rows="6" placeholder='[{"uid":"123","password":"pass"}]'></textarea>
+<label style="display:flex;gap:6px;align-items:center;margin-top:8px">
+<input id="useToken" type="checkbox">
+<span>access_token দিয়ে লগইন (পাসওয়ার্ড বাদে)</span>
+</label>
+<div class="actions">
+<button id="jsonImport" class="good" style="flex:1">📥 Import accounts</button>
+<button id="jsonClear" class="secondary">Clear</button>
+</div>
+<div class="notice" id="jsonNotice"></div>
+
+<hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
+<h2>Global controls</h2>
+<label>Level limit (1–100, blank = off)</label><input id="levelLimit" class="field" type="number" min="1" max="100" placeholder="No limit">
+<label>Daily EXP limit</label><input id="expLimit" class="field" type="number" min="1" placeholder="Default limit">
+<button id="saveLimits" class="secondary" style="width:100%">Apply limits to all</button>
+<div class="actions"><button id="startAll" class="good">Start all</button><button id="pauseAll" class="secondary">Pause all</button></div>
+<div class="actions"><button id="refresh" class="secondary">Refresh all</button><a href="/api/accounts/download"><button class="secondary">Export accounts</button></a></div>
+</aside>
+<section class="panel">
+<div class="toolbar"><div><h2 style="margin:0">Accounts</h2><div class="sub">Live account status and controls</div></div><button id="reload" class="secondary">↻ Refresh</button></div>
+<div id="accounts" class="accounts"><div class="empty">Loading accounts…</div></div>
+</section>
+</div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const fmt=n=>Number(n||0).toLocaleString();
+async function api(url,data){const r=await fetch(url,{method:data?'POST':'GET',headers:data?{'Content-Type':'application/json'}:{},body:data?JSON.stringify(data):undefined});let j={};try{j=await r.json()}catch{}if(!r.ok)throw Error(j.error||('Request failed: '+r.status));return j}
+function say(msg,bad=false){$('notice').textContent=msg;$('notice').style.color=bad?'#ff91a4':'#83e7bd'}
+$('type').onchange=()=>{let t=$('type').value;$('guestFields').hidden=t!=='guest';$('tokenFields').hidden=t!=='token'};
+$('add').onclick=async()=>{try{let d=$('type').value==='guest'?{uid:$('uid').value.trim(),password:$('password').value}:{token:$('token').value.trim()};await api('/api/account/add',d);say('Account added.');$('uid').value='';$('password').value='';$('token').value='';load()}catch(e){say(e.message,true)}};
+$('saveLimits').onclick=async()=>{try{await api('/api/system/limits',{level_limit:$('levelLimit').value||null,exp_limit:$('expLimit').value||null});say('Global limits updated.');load()}catch(e){say(e.message,true)}};
+$('startAll').onclick=()=>action('/api/system/start-all',{},'All accounts started');
+$('pauseAll').onclick=()=>action('/api/system/pause-all',{},'All accounts paused');
+$('refresh').onclick=()=>action('/api/system/refresh',{},'Refresh requested');
+$('reload').onclick=load;
+async function action(url,data,msg){try{await api(url,data);say(msg);load()}catch(e){say(e.message,true)}}
+function renderAccount(a){let status=(a.status||'UNKNOWN').toUpperCase(),uid=a.auth_uid||a.uid;
+let el=document.createElement('article');el.className='account';
+el.innerHTML=`<div class="acc-head"><div><div class="name"></div><div class="muted"></div></div><span class="status"></span></div>
+<div class="metrics"><span>Level <b class="lv"></b></span><span>EXP <b class="xp"></b></span><span>Gained <b class="gain"></b></span><span>Matches <b class="match"></b></span><span>Region <b class="region"></b></span></div>
+<div class="actions"><button class="toggle"></button><button class="secondary refresh">Refresh</button><button class="secondary limit">Level limit</button><button class="secondary expLimit">EXP limit</button><button class="danger delete">Delete</button></div>`;
+el.querySelector('.name').textContent=a.nickname||'Player';
+el.querySelector('.muted').textContent='UID: '+uid;
+el.querySelector('.status').textContent=status;el.querySelector('.status').classList.add(status);
+el.querySelector('.lv').textContent=a.level??'-';el.querySelector('.xp').textContent=fmt(a.current_exp);el.querySelector('.gain').textContent=fmt(a.gained_exp);el.querySelector('.match').textContent=fmt(a.matches_played);el.querySelector('.region').textContent=a.region||'BD';
+let paused=status==='PAUSED';el.querySelector('.toggle').textContent=paused?'Resume':'Pause';
+el.querySelector('.toggle').onclick=()=>action(paused?'/api/account/start':'/api/account/pause',{uid},paused?'Account resumed':'Account paused');
+el.querySelector('.refresh').onclick=()=>action('/api/account/refresh',{uid},'Account refreshed');
+el.querySelector('.limit').onclick=async()=>{let v=prompt('Level limit (1–100). Leave blank to disable:',a.level_limit??'');if(v===null)return;try{await api('/api/account/limit',{uid,limit:v});load()}catch(e){say(e.message,true)}};
+el.querySelector('.expLimit').onclick=async()=>{let v=prompt('Daily EXP limit:',a.exp_limit??'');if(v===null)return;try{await api('/api/account/exp-limit',{uid,limit:v});load()}catch(e){say(e.message,true)}};
+el.querySelector('.delete').onclick=async()=>{if(!confirm('Delete this account from dashboard?'))return;try{await api('/api/account/delete',{uid});load()}catch(e){say(e.message,true)}};
+return el}
+async function load(){try{let d=await api('/api/stats');$('total').textContent=fmt(d.total_accounts);$('running').textContent=fmt(d.running_accounts);$('exp').textContent=fmt(d.total_gained_exp);$('matches').textContent=fmt(d.total_matches);let box=$('accounts');box.replaceChildren();if(!d.accounts?.length){box.innerHTML='<div class="empty">No accounts added yet. Add an account to get started.</div>';return}d.accounts.forEach(a=>box.appendChild(renderAccount(a)))}catch(e){$('accounts').innerHTML='<div class="empty">Could not load dashboard: '+e.message+'</div>'}}
+load();setInterval(load,5000);
+
+/* ===== JSON Import System (rafin_account_bd.json ফরম্যাট সাপোর্ট) ===== */
+$('jsonFile').onchange=()=>{const f=$('jsonFile').files[0];if(!f)return;const r=new FileReader();r.onload=e=>{$('jsonText').value=e.target.result};r.readAsText(f)};
+
+function parseRafinJSON(raw,useToken){
+  let data;
+  try{data=JSON.parse(raw)}catch(e){throw Error('JSON পার্স হয়নি: '+e.message)}
+  const list=Array.isArray(data)?data:(data.accounts||data.data||data.users||[]);
+  if(!list.length)throw Error('ফাইলে কোনো অ্যাকাউন্ট নেই');
+  return list.map((item,i)=>{
+    if(useToken){
+      const token=item.access_token||item.token||item.accessToken;
+      if(!token)throw Error('#'+(i+1)+': access_token নেই');
+      return {token:String(token)};
+    }
+    const uid=item.uid||item.UID;
+    const password=item.password||item.pass||item.pwd;
+    if(!uid||!password)throw Error('#'+(i+1)+': uid বা password নেই');
+    return {uid:String(uid),password:String(password)};
+  });
+}
+
+$('jsonImport').onclick=async()=>{
+  const raw=$('jsonText').value.trim();
+  if(!raw)return sayJson('JSON ফাইল বা টেক্সট দিন',true);
+  let accounts;
+  try{accounts=parseRafinJSON(raw,$('useToken').checked)}
+  catch(e){return sayJson(e.message,true)}
+  const btn=$('jsonImport');btn.disabled=true;
+  let ok=0,fail=0;const errors=[];
+  for(let i=0;i<accounts.length;i++){
+    try{await api('/api/account/add',accounts[i]);ok++}
+    catch(e){fail++;errors.push('#'+(i+1)+' ('+(accounts[i].uid||'token')+'): '+e.message)}
+    sayJson('প্রসেস হচ্ছে… '+(i+1)+'/'+accounts.length+'  ✅'+ok+'  ❌'+fail);
+    await new Promise(r=>setTimeout(r,150));
+  }
+  btn.disabled=false;
+  sayJson('✅ সম্পন্ন — সফল: '+ok+', ব্যর্থ: '+fail,fail>0);
+  if(errors.length)console.warn('Import errors:\n'+errors.join('\n'));
+  if(ok>0){$('jsonText').value='';$('jsonFile').value='';load()}
+};
+
+$('jsonClear').onclick=()=>{$('jsonText').value='';$('jsonFile').value='';sayJson('')};
+
+function sayJson(msg,bad=false){const el=$('jsonNotice');el.textContent=msg;el.style.color=bad?'#ff91a4':'#83e7bd'}
+</script></body></html>
